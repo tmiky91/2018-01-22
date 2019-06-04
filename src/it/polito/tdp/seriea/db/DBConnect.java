@@ -3,38 +3,38 @@ package it.polito.tdp.seriea.db;
 import java.sql.Connection;
 import java.sql.SQLException;
 
-import javax.sql.DataSource;
-
-import com.mchange.v2.c3p0.DataSources;
+import com.zaxxer.hikari.HikariDataSource;
 
 public class DBConnect {
 
-	private static String jdbcURL = "jdbc:mysql://localhost/serie_a?user=root";
-
-	private static DataSource ds;
+	private static final String jdbcURL = "jdbc:mysql://localhost/serie_a?serverTimezone=UTC";
+	private static HikariDataSource ds;
 
 	public static Connection getConnection() {
 
 		if (ds == null) {
-			// initialize DataSource
-			try {
-				ds = DataSources.pooledDataSource(DataSources.unpooledDataSource(jdbcURL));
-			} catch (SQLException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				System.exit(1);
-			}
+			
+			ds = new HikariDataSource();
+
+			ds.setJdbcUrl(jdbcURL);
+			ds.setUsername("root");
+			ds.setPassword("root");
+
+			// configurazione MySQL
+			ds.addDataSourceProperty("cachePrepStmts", "true");
+			ds.addDataSourceProperty("prepStmtCacheSize", "250");
+			ds.addDataSourceProperty("prepStmtCacheSqlLimit", "2048");
+
 		}
 
 		try {
-			Connection c = ds.getConnection();
-			return c;
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
-		}
 
+			return ds.getConnection();
+
+		} catch (SQLException e) {
+			System.err.println("Errore connessione al DB");
+			throw new RuntimeException(e);
+		}
 	}
 
 }
